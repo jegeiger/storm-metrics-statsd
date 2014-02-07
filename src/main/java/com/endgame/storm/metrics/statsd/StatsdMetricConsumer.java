@@ -34,6 +34,7 @@ import backtype.storm.task.IErrorReporter;
 import backtype.storm.task.TopologyContext;
 
 import com.timgroup.statsd.StatsDClient;
+import com.timgroup.statsd.NonBlockingStatsDClient;
 
 /**
  * @author Jason Trost
@@ -62,7 +63,7 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 			parseConfig((Map) registrationArgument);
 		}
 
-		statsd = new StatsDClient(statsdPrefix + clean(topologyName), statsdHost, statsdPort);
+		statsd = new NonBlockingStatsDClient(statsdPrefix + clean(topologyName), statsdHost, statsdPort);
 	}
 
 	void parseConfig(Map conf) {
@@ -169,7 +170,7 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 
 	public void report(String s, int number) {
 		LOG.debug("reporting: {}={}", s, number);
-		statsd.count(s, number);
+		statsd.recordGaugeValue(s, number);
 	}
 
 	@Override

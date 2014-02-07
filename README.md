@@ -78,7 +78,7 @@ System wide deployment requires three steps:
 
     $ mvn package
     $ mvn org.apache.maven.plugins:maven-dependency-plugin:2.7:copy-dependencies -DincludeArtifactIds=java-statsd-client
-    $ cp target/dependency/java-statsd-client-1.0.1.jar $STORM_HOME/lib/
+    $ cp target/dependency/java-statsd-client-2.0.0.jar $STORM_HOME/lib/
     $ cp target/storm-metrics-statsd-*.jar $STORM_HOME/lib/
 
 #### 3. Restart storm and you will likely need to restart any topologies running prior to changing your `$STORM_HOME/conf/storm.yaml`.

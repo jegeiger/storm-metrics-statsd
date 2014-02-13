@@ -169,7 +169,7 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 
 	public void report(String s, int number) {
 		LOG.debug("reporting: {}={}", s, number);
-		statsd.recordGaugeValue(s, number);
+		statsd.recordExecutionTime(s, number);
 	}
 
 	@Override

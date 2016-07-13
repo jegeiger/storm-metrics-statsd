@@ -4,7 +4,7 @@ storm-metrics-statsd is a module for [Storm](http://storm-project.net/) that ena
 
 ## Building/Installation
 
-    git clone https://github.com/endgameinc/storm-metrics-statsd.git
+    git clone https://github.com/jegeiger/storm-metrics-statsd.git
     cd storm-metrics-statsd
     mvn compile package install
 

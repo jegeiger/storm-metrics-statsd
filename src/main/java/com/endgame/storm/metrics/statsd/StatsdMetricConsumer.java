@@ -35,7 +35,6 @@ import backtype.storm.task.TopologyContext;
 
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
-import com.timgroup.statsd.NonBlockingStatsDClient;
 
 /**
  * @author Jason Trost

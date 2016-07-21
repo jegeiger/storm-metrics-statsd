@@ -65,6 +65,20 @@ public class StatsdMetricConsumerTest extends TestCase {
 		assertEquals("my.statsd.prefix.", undertest.statsdPrefix);
 		assertEquals(5555, undertest.statsdPort);
 		assertEquals("myTopologyName", undertest.topologyName);
+
+		// Test that int values are handled appropriately
+		conf.put(StatsdMetricConsumer.STATSD_PORT, 5555);
+
+		undertest.parseConfig(conf);
+
+		assertEquals(5555, undertest.statsdPort);
+
+		// Test that String values are handled appropriately
+		conf.put(StatsdMetricConsumer.STATSD_PORT, "5555");
+
+		undertest.parseConfig(conf);
+
+		assertEquals(5555, undertest.statsdPort);
 	}
 
 	public void testCleanString() {

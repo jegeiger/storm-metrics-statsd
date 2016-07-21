@@ -77,7 +77,14 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 		}
 
 		if (conf.containsKey(STATSD_PORT)) {
-			statsdPort = ((Number) conf.get(STATSD_PORT)).intValue();
+			Object configPortValue = conf.get(STATSD_PORT);
+
+			if (configPortValue instanceof String){
+				statsdPort = Integer.parseInt((String) configPortValue);
+			}
+			else {
+				statsdPort = ((Number) conf.get(STATSD_PORT)).intValue();
+			}
 		}
 
 		if (conf.containsKey(STATSD_PREFIX)) {

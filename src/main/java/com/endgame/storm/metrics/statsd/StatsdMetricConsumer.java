@@ -49,7 +49,7 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 
     // Used to enable or disable appending the hostname key
     // defaulted to use it
-    public static final String STATSD_NO_HOSTNAME = "metrics.statsd.nohostname";
+    public static final String STATSD_USE_HOSTNAME = "metrics.statsd.usehostname";
 
 	String topologyName;
 	String statsdHost;
@@ -100,8 +100,8 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 		}
 
         // The no hostname check
-        if (conf.containsKey(STATSD_NO_HOSTNAME)) {
-            useHostname = (boolean) conf.get(STATSD_NO_HOSTNAME);
+        if (conf.containsKey(STATSD_USE_HOSTNAME)) {
+            useHostname = (boolean) conf.get(STATSD_USE_HOSTNAME);
         }
 	}
 

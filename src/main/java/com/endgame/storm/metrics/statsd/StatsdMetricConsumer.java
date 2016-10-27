@@ -47,10 +47,15 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 	public static final String STATSD_PORT = "metrics.statsd.port";
 	public static final String STATSD_PREFIX = "metrics.statsd.prefix";
 
+    // Used to enable or disable appending the hostname key
+    // defaulted to use it
+    public static final String STATSD_NO_HOSTNAME = "metrics.statsd.nohostname";
+
 	String topologyName;
 	String statsdHost;
 	int statsdPort = 8125;
 	String statsdPrefix = "storm.metrics.";
+    boolean useHostname = true;
 
 	transient StatsDClient statsd;
 
@@ -93,6 +98,11 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 				statsdPrefix += ".";
 			}
 		}
+
+        // The no hostname check
+        if (conf.containsKey(STATSD_NO_HOSTNAME)) {
+            useHostname = (boolean) conf.get(STATSD_NO_HOSTNAME);
+        }
 	}
 
 	String clean(String s) {
@@ -149,9 +159,13 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 			Collection<DataPoint> dataPoints) {
 		List<Metric> res = new LinkedList<>();
 
-		StringBuilder sb = new StringBuilder()
-				.append(clean(taskInfo.srcWorkerHost)).append(".")
-				.append(clean(taskInfo.srcComponentId)).append(".");
+		StringBuilder sb = new StringBuilder();
+
+        // Conditionally append the hostname key
+        if (useHostname) {
+            sb.append(clean(taskInfo.srcWorkerHost)).append(".");
+        }
+		sb.append(clean(taskInfo.srcComponentId)).append(".");
 
 		int hdrLength = sb.length();
 

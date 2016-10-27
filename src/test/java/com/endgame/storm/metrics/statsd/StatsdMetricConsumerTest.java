@@ -58,6 +58,7 @@ public class StatsdMetricConsumerTest extends TestCase {
 		conf.put(StatsdMetricConsumer.STATSD_PORT, 5555l);
 		conf.put(StatsdMetricConsumer.STATSD_PREFIX, "my.statsd.prefix");
 		conf.put(Config.TOPOLOGY_NAME, "myTopologyName");
+        conf.put(StatsdMetricConsumer.STATSD_NO_HOSTNAME, false);
 
 		undertest.parseConfig(conf);
 
@@ -65,6 +66,7 @@ public class StatsdMetricConsumerTest extends TestCase {
 		assertEquals("my.statsd.prefix.", undertest.statsdPrefix);
 		assertEquals(5555, undertest.statsdPort);
 		assertEquals("myTopologyName", undertest.topologyName);
+        assertFalse("Should have been configured to false", undertest.useHostname);
 
 		// Test that int values are handled appropriately
 		conf.put(StatsdMetricConsumer.STATSD_PORT, 5555);
@@ -80,6 +82,28 @@ public class StatsdMetricConsumerTest extends TestCase {
 
 		assertEquals(5555, undertest.statsdPort);
 	}
+
+    public void testParseConfigUseHostnameDefaultsTrueWhenNotDefined() {
+        assertNull(undertest.statsdHost);
+        assertEquals("storm.metrics.", undertest.statsdPrefix);
+        assertEquals(8125, undertest.statsdPort);
+        assertNull(undertest.topologyName);
+
+        Map conf = new HashMap();
+        conf.put(StatsdMetricConsumer.STATSD_HOST, "localhost");
+        // Test that storm/clojure would magically convert int to Long
+        conf.put(StatsdMetricConsumer.STATSD_PORT, 5555l);
+        conf.put(StatsdMetricConsumer.STATSD_PREFIX, "my.statsd.prefix");
+        conf.put(Config.TOPOLOGY_NAME, "myTopologyName");
+
+        undertest.parseConfig(conf);
+
+        assertEquals("localhost", undertest.statsdHost);
+        assertEquals("my.statsd.prefix.", undertest.statsdPrefix);
+        assertEquals(5555, undertest.statsdPort);
+        assertEquals("myTopologyName", undertest.topologyName);
+        assertTrue("Should have been configured to true by default", undertest.useHostname);
+    }
 
 	public void testCleanString() {
 		assertEquals("test", undertest.clean("test"));
@@ -129,7 +153,10 @@ public class StatsdMetricConsumerTest extends TestCase {
 		undertest.topologyName = "testTop";
 		undertest.statsdPrefix = "testPrefix";
 
-		// topology and prefix are used when creating statsd, and statsd client
+        // Enable hostname
+        undertest.useHostname = true;
+
+        // topology and prefix are used when creating statsd, and statsd client
 		// handles adding them
 		// they should not show up here
 
@@ -145,4 +172,41 @@ public class StatsdMetricConsumerTest extends TestCase {
 				undertest.dataPointsToMetrics(taskInfo, dataPoints));
 
 	}
+
+    public void testDataPointsToMetricsWhenHostnameIsDisabled() {
+        TaskInfo taskInfo = new TaskInfo("host1", 6701, "myBolt7", 12,
+                123456789000L, 60);
+        List<DataPoint> dataPoints = new LinkedList<>();
+
+        dataPoints.add(new DataPoint("my.int", 57));
+        dataPoints.add(new DataPoint("my.long", 57L));
+        dataPoints.add(new DataPoint("my/float", 222f));
+        dataPoints.add(new DataPoint("my_double", 56.0d));
+        dataPoints.add(new DataPoint("ignored", "not a num"));
+        dataPoints.add(new DataPoint("points", ImmutableMap
+                .<String, Object> of("count", 123, "time", 2342234, "ignored",
+                        "not a num")));
+
+        undertest.topologyName = "testTop";
+        undertest.statsdPrefix = "testPrefix";
+
+        // Disable hostname
+        undertest.useHostname = false;
+
+        // topology and prefix are used when creating statsd, and statsd client
+        // handles adding them
+        // they should not show up here
+
+        List<Metric> expected = ImmutableList.<Metric> of(new Metric(
+                "myBolt7.my_int", 57), new Metric(
+                "myBolt7.my_long", 57), new Metric(
+                "myBolt7.my_float", 222), new Metric(
+                "myBolt7.my_double", 56), new Metric(
+                "myBolt7.points.count", 123), new Metric(
+                "myBolt7.points.time", 2342234));
+
+        assertEquals(expected,
+                undertest.dataPointsToMetrics(taskInfo, dataPoints));
+
+    }
 }

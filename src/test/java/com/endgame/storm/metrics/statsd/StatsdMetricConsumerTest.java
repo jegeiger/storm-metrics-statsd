@@ -58,7 +58,7 @@ public class StatsdMetricConsumerTest extends TestCase {
 		conf.put(StatsdMetricConsumer.STATSD_PORT, 5555l);
 		conf.put(StatsdMetricConsumer.STATSD_PREFIX, "my.statsd.prefix");
 		conf.put(Config.TOPOLOGY_NAME, "myTopologyName");
-        conf.put(StatsdMetricConsumer.STATSD_NO_HOSTNAME, false);
+        conf.put(StatsdMetricConsumer.STATSD_USE_HOSTNAME, false);
 
 		undertest.parseConfig(conf);
 

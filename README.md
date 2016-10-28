@@ -101,10 +101,10 @@ property it will default to `true` for backwards compatability.
 
 ## Changelog
 
-### v1.2.0
+### v1.3.0
 - Added the `metrics.statsd.usehostname` configuration option to conditionally include the workers hostname in the reported keyspace.
 
-### v1.1.0
+### v1.2.0
 - Removed the workerId key from the reported key space
 
 

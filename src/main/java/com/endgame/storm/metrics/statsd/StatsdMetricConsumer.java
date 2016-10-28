@@ -5,17 +5,16 @@
  * licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
- *  Copyright 2013 Endgame Inc.
- *
+ * <p/>
+ * Copyright 2013 Endgame Inc.
  */
 
 package com.endgame.storm.metrics.statsd;
@@ -47,22 +46,22 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 	public static final String STATSD_PORT = "metrics.statsd.port";
 	public static final String STATSD_PREFIX = "metrics.statsd.prefix";
 
-    // Used to enable or disable appending the hostname key
-    // defaulted to use it
-    public static final String STATSD_USE_HOSTNAME = "metrics.statsd.usehostname";
+	// Used to enable or disable appending the hostname key
+	// defaulted to use it
+	public static final String STATSD_USE_HOSTNAME = "metrics.statsd.usehostname";
 
 	String topologyName;
 	String statsdHost;
 	int statsdPort = 8125;
 	String statsdPrefix = "storm.metrics.";
-    boolean useHostname = true;
+	boolean useHostname = true;
 
 	transient StatsDClient statsd;
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void prepare(Map stormConf, Object registrationArgument,
-			TopologyContext context, IErrorReporter errorReporter) {
+						TopologyContext context, IErrorReporter errorReporter) {
 		parseConfig(stormConf);
 
 		if (registrationArgument instanceof Map) {
@@ -84,10 +83,9 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 		if (conf.containsKey(STATSD_PORT)) {
 			Object configPortValue = conf.get(STATSD_PORT);
 
-			if (configPortValue instanceof String){
+			if (configPortValue instanceof String) {
 				statsdPort = Integer.parseInt((String) configPortValue);
-			}
-			else {
+			} else {
 				statsdPort = ((Number) conf.get(STATSD_PORT)).intValue();
 			}
 		}
@@ -99,23 +97,23 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 			}
 		}
 
-        // The no hostname check
-        if (conf.containsKey(STATSD_USE_HOSTNAME)) {
-            useHostname = (boolean) conf.get(STATSD_USE_HOSTNAME);
-        }
+		// The no hostname check
+		if (conf.containsKey(STATSD_USE_HOSTNAME)) {
+			useHostname = (boolean) conf.get(STATSD_USE_HOSTNAME);
+		}
 	}
 
 	String clean(String s) {
 		return s.replace('.', '_')
 				.replace('/', '_')
-                .replace(':', '_')
-                .replace('|', '_')
-                .replace('@', '_');
+				.replace(':', '_')
+				.replace('|', '_')
+				.replace('@', '_');
 	}
 
 	@Override
 	public void handleDataPoints(TaskInfo taskInfo,
-			Collection<DataPoint> dataPoints) {
+								 Collection<DataPoint> dataPoints) {
 		for (Metric metric : dataPointsToMetrics(taskInfo, dataPoints)) {
 			report(metric.name, metric.value);
 		}
@@ -156,15 +154,15 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 	}
 
 	List<Metric> dataPointsToMetrics(TaskInfo taskInfo,
-			Collection<DataPoint> dataPoints) {
+									 Collection<DataPoint> dataPoints) {
 		List<Metric> res = new LinkedList<>();
 
 		StringBuilder sb = new StringBuilder();
 
-        // Conditionally append the hostname key
-        if (useHostname) {
-            sb.append(clean(taskInfo.srcWorkerHost)).append(".");
-        }
+		// Conditionally append the hostname key
+		if (useHostname) {
+			sb.append(clean(taskInfo.srcWorkerHost)).append(".");
+		}
 		sb.append(clean(taskInfo.srcComponentId)).append(".");
 
 		int hdrLength = sb.length();

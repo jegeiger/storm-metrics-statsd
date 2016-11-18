@@ -101,6 +101,9 @@ property it will default to `true` for backwards compatability.
 
 ## Changelog
 
+### v1.4.0
+- No longer escaping periods (.) in metric key names.
+
 ### v1.3.0
 - Added the `metrics.statsd.usehostname` configuration option to conditionally include the workers hostname in the reported keyspace.
 

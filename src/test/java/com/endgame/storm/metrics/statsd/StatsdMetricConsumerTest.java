@@ -107,7 +107,12 @@ public class StatsdMetricConsumerTest extends TestCase {
 	public void testCleanString() {
 		assertEquals("test", undertest.clean("test"));
 		assertEquals("test_name", undertest.clean("test/name"));
-		assertEquals("test_name", undertest.clean("test.name"));
+		assertEquals("test_name", undertest.clean("test@name"));
+		assertEquals("test_name", undertest.clean("test:name"));
+		assertEquals("test_name", undertest.clean("test|name"));
+
+		// Allow dots thru
+		assertEquals("test.name", undertest.clean("test.name"));
 	}
 
 	public void testPrepare() {
@@ -160,8 +165,8 @@ public class StatsdMetricConsumerTest extends TestCase {
 		// they should not show up here
 
 		List<Metric> expected = ImmutableList.<Metric>of(new Metric(
-				"host1.myBolt7.my_int", 57), new Metric(
-				"host1.myBolt7.my_long", 57), new Metric(
+				"host1.myBolt7.my.int", 57), new Metric(
+				"host1.myBolt7.my.long", 57), new Metric(
 				"host1.myBolt7.my_float", 222), new Metric(
 				"host1.myBolt7.my_double", 56), new Metric(
 				"host1.myBolt7.points.count", 123), new Metric(
@@ -197,8 +202,8 @@ public class StatsdMetricConsumerTest extends TestCase {
 		// they should not show up here
 
 		List<Metric> expected = ImmutableList.<Metric>of(new Metric(
-				"myBolt7.my_int", 57), new Metric(
-				"myBolt7.my_long", 57), new Metric(
+				"myBolt7.my.int", 57), new Metric(
+				"myBolt7.my.long", 57), new Metric(
 				"myBolt7.my_float", 222), new Metric(
 				"myBolt7.my_double", 56), new Metric(
 				"myBolt7.points.count", 123), new Metric(

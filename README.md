@@ -101,6 +101,12 @@ property it will default to `true` for backwards compatability.
 
 ## Changelog
 
+### v1.5.0
+- Metrics now have *special* prefixes:
+- - COUNTER - will be reported as a counter.
+- - GAUGE - will be reported as a gauge.
+- - all others default to being reported as a timer.
+
 ### v1.4.0
 - No longer escaping periods (.) in metric key names.
 

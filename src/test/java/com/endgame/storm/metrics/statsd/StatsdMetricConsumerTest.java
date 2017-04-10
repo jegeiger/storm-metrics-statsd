@@ -164,12 +164,12 @@ public class StatsdMetricConsumerTest extends TestCase {
 		// they should not show up here
 
 		List<Metric> expected = ImmutableList.<Metric>of(
-			Metric.newTimerMetric("host1.myBolt7.my.int", 57),
-			Metric.newTimerMetric("host1.myBolt7.my.long", 57),
-			Metric.newTimerMetric("host1.myBolt7.my_float", 222),
-			Metric.newTimerMetric("host1.myBolt7.my_double", 56),
-			Metric.newTimerMetric("host1.myBolt7.points.count", 123),
-			Metric.newTimerMetric("host1.myBolt7.points.time", 2342234)
+			Metric.createTimerMetric("host1.myBolt7.my.int", 57),
+			Metric.createTimerMetric("host1.myBolt7.my.long", 57),
+			Metric.createTimerMetric("host1.myBolt7.my_float", 222),
+			Metric.createTimerMetric("host1.myBolt7.my_double", 56),
+			Metric.createTimerMetric("host1.myBolt7.points.count", 123),
+			Metric.createTimerMetric("host1.myBolt7.points.time", 2342234)
 		);
 
 		assertEquals(expected,
@@ -202,12 +202,12 @@ public class StatsdMetricConsumerTest extends TestCase {
 		// they should not show up here
 
 		List<Metric> expected = ImmutableList.<Metric>of(
-			Metric.newTimerMetric("myBolt7.my.int", 57),
-			Metric.newTimerMetric("myBolt7.my.long", 57),
-			Metric.newTimerMetric("myBolt7.my_float", 222),
-			Metric.newTimerMetric("myBolt7.my_double", 56),
-			Metric.newTimerMetric("myBolt7.points.count", 123),
-			Metric.newTimerMetric("myBolt7.points.time", 2342234)
+			Metric.createTimerMetric("myBolt7.my.int", 57),
+			Metric.createTimerMetric("myBolt7.my.long", 57),
+			Metric.createTimerMetric("myBolt7.my_float", 222),
+			Metric.createTimerMetric("myBolt7.my_double", 56),
+			Metric.createTimerMetric("myBolt7.points.count", 123),
+			Metric.createTimerMetric("myBolt7.points.time", 2342234)
 		);
 
 		assertEquals(expected,
@@ -242,12 +242,12 @@ public class StatsdMetricConsumerTest extends TestCase {
 		// they should not show up here
 
 		List<Metric> expected = ImmutableList.<Metric>of(
-				Metric.newGaugeMetric("host1.myBolt7.gauge-my.int", 57),
-				Metric.newGaugeMetric("host1.myBolt7.gauge.my.long", 57),
-				Metric.newTimerMetric("host1.myBolt7.timer.my_float", 222),
-				Metric.newCounterMetric("host1.myBolt7.counter-my_double", 56),
-				Metric.newGaugeMetric("host1.myBolt7.gauges.count", 123),
-				Metric.newGaugeMetric("host1.myBolt7.gauges.time", 2342234)
+				Metric.createGaugeMetric("host1.myBolt7.gauge-my.int", 57),
+				Metric.createGaugeMetric("host1.myBolt7.gauge.my.long", 57),
+				Metric.createTimerMetric("host1.myBolt7.timer.my_float", 222),
+				Metric.createCounterMetric("host1.myBolt7.counter-my_double", 56),
+				Metric.createGaugeMetric("host1.myBolt7.gauges.count", 123),
+				Metric.createGaugeMetric("host1.myBolt7.gauges.time", 2342234)
 		);
 
 		assertEquals(expected,

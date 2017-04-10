@@ -1,8 +1,5 @@
 package com.endgame.storm.metrics.statsd;
 
-/**
- *
- */
 public class Metric {
 	private final String name;
 	private final int value;
@@ -55,15 +52,15 @@ public class Metric {
 				'}';
 	}
 
-	public static Metric newTimerMetric(String name, int value) {
+	public static Metric createTimerMetric(String name, int value) {
 		return new Metric(name, value, MetricType.TIMER);
 	}
 
-	public static Metric newGaugeMetric(String name, int value) {
+	public static Metric createGaugeMetric(String name, int value) {
 		return new Metric(name, value, MetricType.GAUGE);
 	}
 
-	public static Metric newCounterMetric(String name, int value) {
+	public static Metric createCounterMetric(String name, int value) {
 		return new Metric(name, value, MetricType.COUNTER);
 	}
 }

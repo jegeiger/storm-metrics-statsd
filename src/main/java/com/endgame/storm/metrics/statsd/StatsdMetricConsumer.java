@@ -161,9 +161,9 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 	}
 
 	private MetricType getMetricTypeFromName(String name) {
-		if (name.startsWith("gauge")) {
+		if (name.startsWith("GAUGE")) {
 			return MetricType.GAUGE;
-		} else if (name.startsWith("counter")) {
+		} else if (name.startsWith("COUNTER")) {
 			return MetricType.COUNTER;
 		}
 		return MetricType.TIMER;

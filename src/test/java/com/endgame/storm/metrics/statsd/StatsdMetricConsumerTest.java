@@ -29,7 +29,6 @@ import org.apache.storm.Config;
 import org.apache.storm.metric.api.IMetricsConsumer.DataPoint;
 import org.apache.storm.metric.api.IMetricsConsumer.TaskInfo;
 
-import com.endgame.storm.metrics.statsd.StatsdMetricConsumer.Metric;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -164,13 +163,14 @@ public class StatsdMetricConsumerTest extends TestCase {
 		// handles adding them
 		// they should not show up here
 
-		List<Metric> expected = ImmutableList.<Metric>of(new Metric(
-				"host1.myBolt7.my.int", 57), new Metric(
-				"host1.myBolt7.my.long", 57), new Metric(
-				"host1.myBolt7.my_float", 222), new Metric(
-				"host1.myBolt7.my_double", 56), new Metric(
-				"host1.myBolt7.points.count", 123), new Metric(
-				"host1.myBolt7.points.time", 2342234));
+		List<Metric> expected = ImmutableList.<Metric>of(
+			Metric.newTimerMetric("host1.myBolt7.my.int", 57),
+			Metric.newTimerMetric("host1.myBolt7.my.long", 57),
+			Metric.newTimerMetric("host1.myBolt7.my_float", 222),
+			Metric.newTimerMetric("host1.myBolt7.my_double", 56),
+			Metric.newTimerMetric("host1.myBolt7.points.count", 123),
+			Metric.newTimerMetric("host1.myBolt7.points.time", 2342234)
+		);
 
 		assertEquals(expected,
 				undertest.dataPointsToMetrics(taskInfo, dataPoints));
@@ -201,13 +201,54 @@ public class StatsdMetricConsumerTest extends TestCase {
 		// handles adding them
 		// they should not show up here
 
-		List<Metric> expected = ImmutableList.<Metric>of(new Metric(
-				"myBolt7.my.int", 57), new Metric(
-				"myBolt7.my.long", 57), new Metric(
-				"myBolt7.my_float", 222), new Metric(
-				"myBolt7.my_double", 56), new Metric(
-				"myBolt7.points.count", 123), new Metric(
-				"myBolt7.points.time", 2342234));
+		List<Metric> expected = ImmutableList.<Metric>of(
+			Metric.newTimerMetric("myBolt7.my.int", 57),
+			Metric.newTimerMetric("myBolt7.my.long", 57),
+			Metric.newTimerMetric("myBolt7.my_float", 222),
+			Metric.newTimerMetric("myBolt7.my_double", 56),
+			Metric.newTimerMetric("myBolt7.points.count", 123),
+			Metric.newTimerMetric("myBolt7.points.time", 2342234)
+		);
+
+		assertEquals(expected,
+				undertest.dataPointsToMetrics(taskInfo, dataPoints));
+	}
+
+	public void testSelectingCorrectMetricTypeBasedOnName() {
+		TaskInfo taskInfo = new TaskInfo("host1", 6701, "myBolt7", 12,
+				123456789000L, 60);
+		List<DataPoint> dataPoints = new LinkedList<>();
+
+		dataPoints.add(new DataPoint("gauge-my.int", 57));
+		dataPoints.add(new DataPoint("gauge.my.long", 57L));
+		dataPoints.add(new DataPoint("timer.my/float", 222f));
+		dataPoints.add(new DataPoint("counter-my_double", 56.0d));
+		dataPoints.add(new DataPoint("countersignored", "not a num"));
+		dataPoints.add(new DataPoint("gauges", ImmutableMap.<String, Object>of(
+			"count", 123,
+			"time", 2342234,
+			"ignored",
+			"not a num")
+		));
+
+		undertest.topologyName = "testTop";
+		undertest.statsdPrefix = "testPrefix";
+
+		// Enable hostname
+		undertest.useHostname = true;
+
+		// topology and prefix are used when creating statsd, and statsd client
+		// handles adding them
+		// they should not show up here
+
+		List<Metric> expected = ImmutableList.<Metric>of(
+				Metric.newGaugeMetric("host1.myBolt7.gauge-my.int", 57),
+				Metric.newGaugeMetric("host1.myBolt7.gauge.my.long", 57),
+				Metric.newTimerMetric("host1.myBolt7.timer.my_float", 222),
+				Metric.newCounterMetric("host1.myBolt7.counter-my_double", 56),
+				Metric.newGaugeMetric("host1.myBolt7.gauges.count", 123),
+				Metric.newGaugeMetric("host1.myBolt7.gauges.time", 2342234)
+		);
 
 		assertEquals(expected,
 				undertest.dataPointsToMetrics(taskInfo, dataPoints));

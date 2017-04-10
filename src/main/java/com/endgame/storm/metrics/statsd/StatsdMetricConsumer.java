@@ -114,41 +114,7 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 	public void handleDataPoints(TaskInfo taskInfo,
 								 Collection<DataPoint> dataPoints) {
 		for (Metric metric : dataPointsToMetrics(taskInfo, dataPoints)) {
-			report(metric.name, metric.value);
-		}
-	}
-
-	public static class Metric {
-		String name;
-		int value;
-
-		public Metric(String name, int value) {
-			this.name = name;
-			this.value = value;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			Metric other = (Metric) obj;
-			if (name == null) {
-				if (other.name != null)
-					return false;
-			} else if (!name.equals(other.name))
-				return false;
-			if (value != other.value)
-				return false;
-			return true;
-		}
-
-		@Override
-		public String toString() {
-			return "Metric [name=" + name + ", value=" + value + "]";
+			report(metric);
 		}
 	}
 
@@ -171,8 +137,11 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 			sb.delete(hdrLength, sb.length());
 			sb.append(clean(p.name));
 
+			// Get type from metric name
+			final MetricType metricType = getMetricTypeFromName(p.name);
+
 			if (p.value instanceof Number) {
-				res.add(new Metric(sb.toString(), ((Number) p.value).intValue()));
+				res.add(new Metric(sb.toString(), ((Number) p.value).intValue(), metricType));
 			} else if (p.value instanceof Map) {
 				int hdrAndNameLength = sb.length();
 				@SuppressWarnings("rawtypes")
@@ -183,7 +152,7 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 						sb.delete(hdrAndNameLength, sb.length());
 						sb.append(".").append(clean(subName.toString()));
 
-						res.add(new Metric(sb.toString(), ((Number) subValue).intValue()));
+						res.add(new Metric(sb.toString(), ((Number) subValue).intValue(), metricType));
 					}
 				}
 			}
@@ -191,9 +160,26 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 		return res;
 	}
 
-	public void report(String s, int number) {
-		LOG.debug("reporting: {}={}", s, number);
-		statsd.recordExecutionTime(s, number);
+	private MetricType getMetricTypeFromName(String name) {
+		if (name.startsWith("GAUGE")) {
+			return MetricType.GAUGE;
+		} else if (name.startsWith("COUNTER")) {
+			return MetricType.COUNTER;
+		}
+		return MetricType.TIMER;
+	}
+
+	private void report(Metric metric) {
+		LOG.debug("reporting: {}", metric.toString());
+
+		if (MetricType.COUNTER.equals(metric.type())) {
+			statsd.count(metric.name(), metric.value());
+		} else if (MetricType.GAUGE.equals(metric.type())) {
+			statsd.gauge(metric.name(), metric.value());
+		} else {
+			// Fall back to timer.
+			statsd.recordExecutionTime(metric.name(), metric.value());
+		}
 	}
 
 	@Override

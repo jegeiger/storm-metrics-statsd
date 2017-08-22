@@ -141,7 +141,7 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 			final MetricType metricType = getMetricTypeFromName(p.name);
 
 			if (p.value instanceof Number) {
-				res.add(new Metric(sb.toString(), ((Number) p.value).intValue(), metricType));
+				res.add(new Metric(sb.toString(), ((Number) p.value), metricType));
 			} else if (p.value instanceof Map) {
 				int hdrAndNameLength = sb.length();
 				@SuppressWarnings("rawtypes")
@@ -152,7 +152,7 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 						sb.delete(hdrAndNameLength, sb.length());
 						sb.append(".").append(clean(subName.toString()));
 
-						res.add(new Metric(sb.toString(), ((Number) subValue).intValue(), metricType));
+						res.add(new Metric(sb.toString(), ((Number) subValue), metricType));
 					}
 				}
 			}
@@ -173,12 +173,12 @@ public class StatsdMetricConsumer implements IMetricsConsumer {
 		LOG.debug("reporting: {}", metric.toString());
 
 		if (MetricType.COUNTER.equals(metric.type())) {
-			statsd.count(metric.name(), metric.value());
+			statsd.count(metric.name(), metric.value().longValue());
 		} else if (MetricType.GAUGE.equals(metric.type())) {
-			statsd.gauge(metric.name(), metric.value());
+			statsd.gauge(metric.name(), metric.value().longValue());
 		} else {
 			// Fall back to timer.
-			statsd.recordExecutionTime(metric.name(), metric.value());
+			statsd.recordExecutionTime(metric.name(), metric.value().longValue());
 		}
 	}
 

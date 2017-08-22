@@ -30,7 +30,7 @@ public class Metric {
 
 		Metric metric = (Metric) o;
 
-		if (value != metric.value) return false;
+		if (value.longValue() != metric.value.longValue()) return false;
 		if (!name.equals(metric.name)) return false;
 		return type == metric.type;
 	}

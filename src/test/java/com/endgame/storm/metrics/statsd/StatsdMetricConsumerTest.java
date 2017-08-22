@@ -31,11 +31,14 @@ import org.apache.storm.metric.api.IMetricsConsumer.TaskInfo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Jason Trost
  */
 public class StatsdMetricConsumerTest extends TestCase {
+	private static final Logger logger = LoggerFactory.getLogger(StatsdMetricConsumerTest.class);
 
 	StatsdMetricConsumer undertest;
 
@@ -152,6 +155,8 @@ public class StatsdMetricConsumerTest extends TestCase {
 		dataPoints.add(new DataPoint("points", ImmutableMap
 				.<String, Object>of("count", 123, "time", 2342234, "ignored",
 						"not a num")));
+		dataPoints.add(new DataPoint("reallybig", 10957511159L));
+
 
 		undertest.topologyName = "testTop";
 		undertest.statsdPrefix = "testPrefix";
@@ -160,21 +165,22 @@ public class StatsdMetricConsumerTest extends TestCase {
 		undertest.useHostname = true;
 
 		// topology and prefix are used when creating statsd, and statsd client
-		// handles adding them
-		// they should not show up here
-
+		// handles adding them, they should not show up here.
 		List<Metric> expected = ImmutableList.<Metric>of(
 			Metric.createTimerMetric("host1.myBolt7.my.int", 57),
 			Metric.createTimerMetric("host1.myBolt7.my.long", 57),
 			Metric.createTimerMetric("host1.myBolt7.my_float", 222),
 			Metric.createTimerMetric("host1.myBolt7.my_double", 56),
 			Metric.createTimerMetric("host1.myBolt7.points.count", 123),
-			Metric.createTimerMetric("host1.myBolt7.points.time", 2342234)
+			Metric.createTimerMetric("host1.myBolt7.points.time", 2342234),
+			Metric.createTimerMetric("host1.myBolt7.reallybig", 10957511159L)
 		);
 
-		assertEquals(expected,
-				undertest.dataPointsToMetrics(taskInfo, dataPoints));
+		// get result
+		final List<Metric> results = undertest.dataPointsToMetrics(taskInfo, dataPoints);
 
+		// validate result
+		validateResults(expected, results);
 	}
 
 	public void testDataPointsToMetricsWhenHostnameIsDisabled() {
@@ -190,6 +196,7 @@ public class StatsdMetricConsumerTest extends TestCase {
 		dataPoints.add(new DataPoint("points", ImmutableMap
 				.<String, Object>of("count", 123, "time", 2342234, "ignored",
 						"not a num")));
+		dataPoints.add(new DataPoint("reallybig", 10957511159L));
 
 		undertest.topologyName = "testTop";
 		undertest.statsdPrefix = "testPrefix";
@@ -207,11 +214,15 @@ public class StatsdMetricConsumerTest extends TestCase {
 			Metric.createTimerMetric("myBolt7.my_float", 222),
 			Metric.createTimerMetric("myBolt7.my_double", 56),
 			Metric.createTimerMetric("myBolt7.points.count", 123),
-			Metric.createTimerMetric("myBolt7.points.time", 2342234)
+			Metric.createTimerMetric("myBolt7.points.time", 2342234),
+			Metric.createTimerMetric("myBolt7.reallybig", 10957511159L)
 		);
 
-		assertEquals(expected,
-				undertest.dataPointsToMetrics(taskInfo, dataPoints));
+		// get result
+		final List<Metric> results = undertest.dataPointsToMetrics(taskInfo, dataPoints);
+
+		// validate result
+		validateResults(expected, results);
 	}
 
 	public void testSelectingCorrectMetricTypeBasedOnName() {
@@ -219,17 +230,20 @@ public class StatsdMetricConsumerTest extends TestCase {
 				123456789000L, 60);
 		List<DataPoint> dataPoints = new LinkedList<>();
 
-		dataPoints.add(new DataPoint("gauge-my.int", 57));
-		dataPoints.add(new DataPoint("gauge.my.long", 57L));
-		dataPoints.add(new DataPoint("timer.my/float", 222f));
-		dataPoints.add(new DataPoint("counter-my_double", 56.0d));
-		dataPoints.add(new DataPoint("countersignored", "not a num"));
-		dataPoints.add(new DataPoint("gauges", ImmutableMap.<String, Object>of(
-			"count", 123,
-			"time", 2342234,
+		dataPoints.add(new DataPoint("GAUGE-my.int", 57));
+		dataPoints.add(new DataPoint("GAUGE.my.long", 57L));
+		dataPoints.add(new DataPoint("TIMER.my/float", 222f));
+		dataPoints.add(new DataPoint("COUNTER-my_double", 56.0d));
+		dataPoints.add(new DataPoint("COUNTERSignored", "not a num"));
+		dataPoints.add(new DataPoint("GAUGES", ImmutableMap.<String, Object>of(
+			"COUNT", 123,
+			"TIME", 2342234,
 			"ignored",
 			"not a num")
 		));
+		dataPoints.add(new DataPoint("GAUGE-reallybig",10957511160L));
+		dataPoints.add(new DataPoint("COUNTER-reallybig",10957511161L));
+		dataPoints.add(new DataPoint("TIMER-reallybig",10957511162L));
 
 		undertest.topologyName = "testTop";
 		undertest.statsdPrefix = "testPrefix";
@@ -242,16 +256,42 @@ public class StatsdMetricConsumerTest extends TestCase {
 		// they should not show up here
 
 		List<Metric> expected = ImmutableList.<Metric>of(
-				Metric.createGaugeMetric("host1.myBolt7.gauge-my.int", 57),
-				Metric.createGaugeMetric("host1.myBolt7.gauge.my.long", 57),
-				Metric.createTimerMetric("host1.myBolt7.timer.my_float", 222),
-				Metric.createCounterMetric("host1.myBolt7.counter-my_double", 56),
-				Metric.createGaugeMetric("host1.myBolt7.gauges.count", 123),
-				Metric.createGaugeMetric("host1.myBolt7.gauges.time", 2342234)
+			Metric.createGaugeMetric("host1.myBolt7.GAUGE-my.int", 57),
+			Metric.createGaugeMetric("host1.myBolt7.GAUGE.my.long", 57),
+			Metric.createTimerMetric("host1.myBolt7.TIMER.my_float", 222),
+			Metric.createCounterMetric("host1.myBolt7.COUNTER-my_double", 56),
+			Metric.createGaugeMetric("host1.myBolt7.GAUGES.COUNT", 123),
+			Metric.createGaugeMetric("host1.myBolt7.GAUGES.TIME", 2342234),
+			Metric.createGaugeMetric("host1.myBolt7.GAUGE-reallybig", 10957511160L),
+			Metric.createCounterMetric("host1.myBolt7.COUNTER-reallybig", 10957511161L),
+			Metric.createTimerMetric("host1.myBolt7.TIMER-reallybig", 10957511162L)
 		);
 
-		assertEquals(expected,
-				undertest.dataPointsToMetrics(taskInfo, dataPoints));
+		// get result
+		final List<Metric> results = undertest.dataPointsToMetrics(taskInfo, dataPoints);
 
+		// validate result
+		validateResults(expected, results);
+	}
+
+	/**
+	 * Utility method to validate result.
+	 * @param expected The Metrics we expected to get back.
+	 * @param results The Metrics we actually got back.
+	 */
+	private void validateResults(List<Metric> expected, List<Metric> results) {
+		// Validate
+		assertEquals("Should have same number of results", expected.size(), results.size());
+
+		// Loop through one by one
+		for (final Metric expectedMetric: expected) {
+			if (!results.contains(expectedMetric)) {
+				// debug log
+				logger.error("failed to find {}", expectedMetric);
+				logger.error("Result: {}", results);
+
+			}
+			assertTrue("Contains our expected result metric", results.contains(expectedMetric));
+		}
 	}
 }

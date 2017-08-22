@@ -101,6 +101,11 @@ property it will default to `true` for backwards compatability.
 
 ## Changelog
 
+### v1.6.0
+- Update underlying statsd client to 3.1.0
+- Metrics are no longer coerced into ints
+- - This means long values will no longer overflow.
+
 ### v1.5.0
 - Metrics now have *special* prefixes:
 - - COUNTER - will be reported as a counter.

@@ -2,10 +2,10 @@ package com.endgame.storm.metrics.statsd;
 
 public class Metric {
 	private final String name;
-	private final int value;
+	private final Number value;
 	private final MetricType type;
 
-	public Metric(String name, int value, MetricType type) {
+	public Metric(String name, Number value, MetricType type) {
 		this.name = name;
 		this.value = value;
 		this.type = type;
@@ -15,7 +15,7 @@ public class Metric {
 		return name;
 	}
 
-	public int value() {
+	public Number value() {
 		return value;
 	}
 
@@ -30,7 +30,7 @@ public class Metric {
 
 		Metric metric = (Metric) o;
 
-		if (value != metric.value) return false;
+		if (value.longValue() != metric.value.longValue()) return false;
 		if (!name.equals(metric.name)) return false;
 		return type == metric.type;
 	}
@@ -38,7 +38,7 @@ public class Metric {
 	@Override
 	public int hashCode() {
 		int result = name.hashCode();
-		result = 31 * result + value;
+		result = 31 * result + value.hashCode();
 		result = 31 * result + type.hashCode();
 		return result;
 	}
@@ -52,15 +52,15 @@ public class Metric {
 				'}';
 	}
 
-	public static Metric createTimerMetric(String name, int value) {
+	public static Metric createTimerMetric(String name, Number value) {
 		return new Metric(name, value, MetricType.TIMER);
 	}
 
-	public static Metric createGaugeMetric(String name, int value) {
+	public static Metric createGaugeMetric(String name, Number value) {
 		return new Metric(name, value, MetricType.GAUGE);
 	}
 
-	public static Metric createCounterMetric(String name, int value) {
+	public static Metric createCounterMetric(String name, Number value) {
 		return new Metric(name, value, MetricType.COUNTER);
 	}
 }
